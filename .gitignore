@@ -1,0 +1,8 @@
+bochsout.txt
+*.o
+*.out
+*.img
+kernel
+tstpr2
+tstprg
+loadFile
