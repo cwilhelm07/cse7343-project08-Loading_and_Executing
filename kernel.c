@@ -24,6 +24,7 @@ void printChar(char);
 void readString(char*);
 void readSector(char*, int);
 void readFile(char*, char*);
+void executeProgram(char*, int);
 int getFileSectors(char*, char*, char*);
 void setFileSectors(char*, char*);
 void handleInterrupt21(int, int, int, int);
@@ -35,14 +36,17 @@ int main() {
    char buffer[13312];
 
    makeInterrupt21();
-
-/* Step 1: */
-   /* read file into buffer */
+/*
+// Step 1:
+   // read file into buffer
    interrupt(0x21, 3, "messag\0", buffer, 0);
 
-   /* print out the file */
+   // print out the file
    interrupt(0x21, 0, buffer, 0, 0);
-   
+*/
+// Step 2:
+   interrupt(0x21, 4, "tstprg\0", 0x2000, 0);
+
    while(1);
 }
 
@@ -120,6 +124,19 @@ void readFile(char fileName[6], char buffer[13312]) {
    }
 }
 
+void executeProgram(char name[6], int segment) {
+   char buffer[13312];
+   int i = 0;
+
+   readFile(name, buffer);
+   while ( i < 13312)
+   {
+      putInMemory(segment, i, buffer[i]);
+      i++;
+   }
+   launchProgram(segment);
+}
+
 int getFileSectors(char fileName[6], char sectorBuff[512], char fileSectors[26]) {
    int i = 0;
    int j = 0;
@@ -183,6 +200,10 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
          break;
       case 3: // read file
          readFile(bx, cx);
+         break;
+      case 4: // execute program
+         executeProgram(bx, cx);
+         break;
       default:
          printString("Error: Invalid Command\0");
          break;
