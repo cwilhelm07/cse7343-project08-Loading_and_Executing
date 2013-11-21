@@ -25,6 +25,7 @@ void readString(char*);
 void readSector(char*, int);
 void readFile(char*, char*);
 void executeProgram(char*, int);
+void terminate();
 int getFileSectors(char*, char*, char*);
 void setFileSectors(char*, char*);
 void handleInterrupt21(int, int, int, int);
@@ -45,7 +46,7 @@ int main() {
    interrupt(0x21, 0, buffer, 0, 0);
 */
 // Step 2:
-   interrupt(0x21, 4, "tstprg\0", 0x2000, 0);
+   interrupt(0x21, 4, "tstpr2\0", 0x2000, 0);
 
    while(1);
 }
@@ -137,6 +138,10 @@ void executeProgram(char name[6], int segment) {
    launchProgram(segment);
 }
 
+void terminate () {
+   while(1);
+}
+
 int getFileSectors(char fileName[6], char sectorBuff[512], char fileSectors[26]) {
    int i = 0;
    int j = 0;
@@ -203,6 +208,9 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
          break;
       case 4: // execute program
          executeProgram(bx, cx);
+         break;
+      case 5: // terminate
+         terminate();
          break;
       default:
          printString("Error: Invalid Command\0");
