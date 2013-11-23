@@ -15,9 +15,11 @@
 void print(char*);
 void scan(char*);
 void readFile(char*);
+void executeFile(char*);
 
 void processCmd(char*);
 void processType(char*);
+void processExecute(char*);
 void splitCmds(char*, char*, char*);
 int strCmp(char*, char*);
 void truncFileName(char*, char*);
@@ -51,10 +53,18 @@ void readFile(char fileName[FILE_NAME_SIZE], char buffer[FILE_SIZE]) {
    interrupt(0x21, 3, fileName, buffer, 0);
 }
 
+void executeFile(char fileName[FILE_NAME_SIZE]) {
+   interrupt(0x21, 4, fileName, 0x2000, 0);
+}
+
 void processCmd(char cmd1[LINE_LENGTH], char cmd2[LINE_LENGTH]) {
    if ( strCmp(cmd1, "type\0") )
    {
       processType(cmd2);
+   }
+   else if ( strCmp(cmd1, "execute\0") )
+   {
+      processExecute(cmd2);
    }
    else
    {
@@ -69,6 +79,13 @@ void processType(char fileName[LINE_LENGTH]) {
    truncFileName(fileName, fileNameTrunc);
    readFile(fileNameTrunc, buffer);
    print(buffer);
+}
+
+void processExecute(char fileName[LINE_LENGTH]) {
+   char fileNameTrunc[FILE_NAME_SIZE];
+
+   truncFileName(fileName, fileNameTrunc);
+   executeFile(fileNameTrunc);
 }
 
 void splitCmds(char cmd[LINE_LENGTH], char cmd1[LINE_LENGTH], char cmd2[LINE_LENGTH]) {
