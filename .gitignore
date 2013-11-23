@@ -3,6 +3,7 @@ bochsout.txt
 *.out
 *.img
 kernel
+shell
 tstpr2
 tstprg
 loadFile

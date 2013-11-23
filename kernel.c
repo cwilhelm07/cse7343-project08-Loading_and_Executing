@@ -8,16 +8,21 @@
 #define SECTOR_RW_INTERRUPT 0x13
 #define KEYBOARD_INTERRUPT  0x16
 
-#define AH_OUT_TO_CONSOLE  0x0E
+#define AH_OUT_TO_CONSOLE   0x0E
 
-#define ENTER_ASCII        0x0D
-#define BKSPC_ASCII        0x08
+#define ENTER_ASCII         0x0D
+#define BKSPC_ASCII         0x08
 
-#define LINE_FEED          0x0A
-#define END_OF_STRING      0x00
+#define LINE_FEED           0x0A
+#define END_OF_STRING       0x00
 
-#define SUCCESS            1
-#define FAILURE            0
+#define FILE_NAME_SIZE      6
+#define LINE_SIZE           80
+#define SECTOR_SIZE         512
+#define FILE_SIZE           13312
+
+#define SUCCESS             1
+#define FAILURE             0
 
 void printString(char*);
 void printChar(char);
@@ -33,8 +38,8 @@ int mod(int, int);
 int div(int, int);
 
 int main() {
-   char line[80];
-   char buffer[13312];
+   char line[LINE_SIZE];
+   char buffer[FILE_SIZE];
 
    makeInterrupt21();
 /*
@@ -44,9 +49,15 @@ int main() {
 
    // print out the file
    interrupt(0x21, 0, buffer, 0, 0);
-*/
+
 // Step 2:
+   interrupt(0x21, 4, "tstprg\0", 0x2000, 0);
+
+// Step 3:
    interrupt(0x21, 4, "tstpr2\0", 0x2000, 0);
+*/
+// Step 4:
+   interrupt(0x21, 4, "shell\0", 0x2000, 0);
 
    while(1);
 }
@@ -68,7 +79,7 @@ void printChar(char character) {
    interrupt(IO_INTERRUPT, ax, 0, 0, 0);
 }
 
-void readString(char line[80]) {
+void readString(char line[LINE_SIZE]) {
    char key;
    int i = 0;
 
@@ -98,7 +109,7 @@ void readString(char line[80]) {
    line[i] = key;
 }
 
-void readSector(char buffer[512], int sector) {
+void readSector(char buffer[SECTOR_SIZE], int sector) {
    int ah = 2; // read sector
    int al = 1; // number of sectors to read
    int ax = ah * 256 + al;
@@ -114,8 +125,8 @@ void readSector(char buffer[512], int sector) {
    interrupt(SECTOR_RW_INTERRUPT, ax, buffer, cx, dx);
 }
 
-void readFile(char fileName[6], char buffer[13312]) {
-   char sectorBuff[512];
+void readFile(char fileName[FILE_NAME_SIZE], char buffer[FILE_SIZE]) {
+   char sectorBuff[SECTOR_SIZE];
    char fileSectors[26];
 
    readSector(sectorBuff, 0x02);
@@ -125,12 +136,12 @@ void readFile(char fileName[6], char buffer[13312]) {
    }
 }
 
-void executeProgram(char name[6], int segment) {
-   char buffer[13312];
+void executeProgram(char name[FILE_NAME_SIZE], int segment) {
+   char buffer[FILE_SIZE];
    int i = 0;
 
    readFile(name, buffer);
-   while ( i < 13312)
+   while ( i < FILE_SIZE)
    {
       putInMemory(segment, i, buffer[i]);
       i++;
@@ -142,15 +153,15 @@ void terminate () {
    while(1);
 }
 
-int getFileSectors(char fileName[6], char sectorBuff[512], char fileSectors[26]) {
+int getFileSectors(char fileName[FILE_NAME_SIZE], char sectorBuff[SECTOR_SIZE], char fileSectors[26]) {
    int i = 0;
    int j = 0;
    int k = 0;
    
    /* parse sectorBuff for first char in fileName */
-   while ( i < 512 )
+   while ( i < SECTOR_SIZE )
    {
-      /* See if all 6 chars of fileName are in sectorBuff */
+      /* See if all chars of fileName are in sectorBuff */
       while ( sectorBuff[i + j] == fileName[j] )
       {
          if ( j == 5 )
@@ -172,8 +183,8 @@ int getFileSectors(char fileName[6], char sectorBuff[512], char fileSectors[26])
    return FAILURE;
 }
 
-void setFileSectors(char buffer[13312], char fileSectors[26]) {
-   char sectorBuff[512];
+void setFileSectors(char buffer[FILE_SIZE], char fileSectors[26]) {
+   char sectorBuff[SECTOR_SIZE];
    int i = 0;
    int j = 0;
 
@@ -182,9 +193,9 @@ void setFileSectors(char buffer[13312], char fileSectors[26]) {
    {
       j = 0;
       readSector(sectorBuff, fileSectors[i]);
-      while ( j < 512 )
+      while ( j < SECTOR_SIZE )
       {
-         buffer[i * 512 + j] = sectorBuff[j];
+         buffer[i * SECTOR_SIZE + j] = sectorBuff[j];
          j++;
       }
       i++;
