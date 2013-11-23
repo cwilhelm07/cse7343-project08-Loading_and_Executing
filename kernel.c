@@ -150,7 +150,7 @@ void executeProgram(char name[FILE_NAME_SIZE], int segment) {
 }
 
 void terminate () {
-   while(1);
+   interrupt(0x21, 4, "shell\0", 0x2000, 0);
 }
 
 int getFileSectors(char fileName[FILE_NAME_SIZE], char sectorBuff[SECTOR_SIZE], char fileSectors[26]) {
