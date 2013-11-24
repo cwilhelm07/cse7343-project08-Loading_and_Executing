@@ -54,7 +54,7 @@ void readFile(char fileName[FILE_NAME_SIZE], char buffer[FILE_SIZE]) {
 }
 
 void executeFile(char fileName[FILE_NAME_SIZE]) {
-   interrupt(0x21, 4, fileName, 0x2000, 0);
+   interrupt(0x21, 6, fileName, 0x2000, 0);
 }
 
 void processCmd(char cmd1[LINE_LENGTH], char cmd2[LINE_LENGTH]) {

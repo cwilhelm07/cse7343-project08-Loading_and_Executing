@@ -51,13 +51,13 @@ int main() {
    interrupt(0x21, 0, buffer, 0, 0);
 
 // Step 2:
-   interrupt(0x21, 4, "tstprg\0", 0x2000, 0);
+   interrupt(0x21, 6, "tstprg\0", 0x2000, 0);
 
 // Step 3:
-   interrupt(0x21, 4, "tstpr2\0", 0x2000, 0);
+   interrupt(0x21, 6, "tstpr2\0", 0x2000, 0);
 */
 // Step 4:
-   interrupt(0x21, 4, "shell\0", 0x2000, 0);
+   interrupt(0x21, 6, "shell\0", 0x2000, 0);
 
    while(1);
 }
@@ -150,7 +150,7 @@ void executeProgram(char name[FILE_NAME_SIZE], int segment) {
 }
 
 void terminate () {
-   interrupt(0x21, 4, "shell\0", 0x2000, 0);
+   executeProgram("shell\0", 0x2000);
 }
 
 int getFileSectors(char fileName[FILE_NAME_SIZE], char sectorBuff[SECTOR_SIZE], char fileSectors[26]) {
@@ -217,14 +217,14 @@ void handleInterrupt21(int ax, int bx, int cx, int dx) {
       case 3: // read file
          readFile(bx, cx);
          break;
-      case 4: // execute program
+      case 6: // execute program
          executeProgram(bx, cx);
          break;
-      case 5: // terminate
+      case 7: // terminate
          terminate();
          break;
       default:
-         printString("Error: Invalid Command\0");
+         printString("Error: Invalid Command\n\r\0");
          break;
    }
 }
